@@ -12,10 +12,10 @@ namespace SimplexMethod
         private List<string> signs;
         private List<double> limits;
 
-        private List<double> startBasis;        // Начальное допустимое базисное решение
+        private List<double> startBasis; // Начальное допустимое базисное решение
         private List<double> resultBasis;
-        private int countVariable;              // Изначальное количество переменных
-        private int countArtificialVariable;    // Количество добавленных искусственных переменных
+        private int countVariable; // Изначальное количество переменных
+        private int countArtificialVariable; // Количество добавленных искусственных переменных
         private bool isInvertTarget = false;
 
         #region Create task
@@ -190,6 +190,7 @@ namespace SimplexMethod
                     if (i == j) continue;
                     limitations[j].Add(0);
                 }
+
                 targetFunc.Add(0);
                 isChanged = true;
             }
@@ -204,17 +205,19 @@ namespace SimplexMethod
                     {
                         limitations[i][j] = -limitations[i][j];
                     }
+
                     isChanged = true;
                 }
             }
 
-            if(isChanged)
+            if (isChanged)
             {
                 Console.WriteLine("ЗЛП приведена в стандартный вид:");
                 PrintLpp();
                 Console.WriteLine();
                 return;
             }
+
             Console.WriteLine("ЗЛП уже находится в стандартном виде\n");
         }
 
@@ -258,8 +261,8 @@ namespace SimplexMethod
                     countBasis++;
                 }
             }
-            
-            if(countBasis == limitations.Count - countVariable)
+
+            if (countBasis == limitations.Count - countVariable)
             {
                 Console.WriteLine("ЗЛП в каноническом виде, следовательно решается одноэтапным симплекс-методом");
                 Console.Write("НДБР = (");
@@ -267,8 +270,10 @@ namespace SimplexMethod
                 {
                     Console.Write(" " + startBasis[i] + (i != startBasis.Count - 1 ? "," : " )\n\n"));
                 }
+
                 return true;
             }
+
             return false;
         }
 
@@ -278,15 +283,21 @@ namespace SimplexMethod
             countArtificialVariable = 0;
             ToStandartForm();
 
+            // Решение одноэтапным методом
             startBasis = new List<double>();
             for (int i = 0; i < targetFunc.Count; i++)
             {
                 startBasis.Add(0);
             }
 
+            resultBasis = new List<double>();
+            for (int i = 0; i < targetFunc.Count; i++)
+            {
+                resultBasis.Add(0);
+            }
+
             if (IsCanonicalForm())
             {
-                // Решение одноэтапным методом
                 double coef;
                 List<List<double>> simplexTable = CreateSimplexTable();
                 PrintStartSimplexTable(simplexTable);
@@ -296,16 +307,14 @@ namespace SimplexMethod
                 {
                     // Выбираем ведущий столбец
                     int selectColumn = SelectColumn(simplexTable[simplexTable.Count - 1]);
-                    // Коэффициенты для выбора ведущей строки
-                    List<double> coefs = new List<double>();
                     // Ведущая строка
                     int selectLine = -1;
                     // Максимальный по модулю отрицательный коэффициент
                     double minCoef = int.MaxValue;
-                    for (int i = 0; i < simplexTable.Count -1; i++)
+                    for (int i = 0; i < simplexTable.Count - 1; i++)
                     {
                         // Если правая часть равна 0, то пропускаем
-                        if(simplexTable[i][simplexTable[i].Count - 1] == 0) continue;
+                        if (simplexTable[i][simplexTable[i].Count - 1] == 0) continue;
                         // Если коэффициент в ведущем столбце равен 0, тоже пропускаем
                         if (simplexTable[i][selectColumn] == 0) continue;
                         // Считаем отношение правой части к коэффициенту ведущего столбца
@@ -318,6 +327,8 @@ namespace SimplexMethod
                         }
                     }
 
+                    Console.WriteLine("Столбец " + selectColumn + ", строка " + selectLine + "\n");
+
                     // Делим ведущую строку на коэффициент, расположенный на пересечении выбранных столбца и строки
                     coef = simplexTable[selectLine][selectColumn];
                     for (int i = 0; i < simplexTable[selectLine].Count; i++)
@@ -325,10 +336,10 @@ namespace SimplexMethod
                         simplexTable[selectLine][i] /= coef;
                     }
 
-                    // Вычитаем тз других строк получившуюся строку с определнным коэффициентом
+                    // Вычитаем из других строк получившуюся строку с определнным коэффициентом
                     for (int i = 0; i < simplexTable.Count; i++)
                     {
-                        if(i == selectLine) continue;
+                        if (i == selectLine) continue;
                         // Считаем коэффициент
                         coef = simplexTable[i][selectColumn];
                         for (int j = 0; j < simplexTable[i].Count; j++)
@@ -336,39 +347,46 @@ namespace SimplexMethod
                             simplexTable[i][j] -= coef * simplexTable[selectLine][j];
                         }
                     }
-                    Console.WriteLine("Столбец " + selectColumn + ", строка " + selectLine + "\n");
-                    PrintSimplexTable(simplexTable);
-                }
 
-                resultBasis = new List<double>();
-                for (int i = 0; i < targetFunc.Count; i++)
-                {
-                    resultBasis.Add(0);
-                }
-                
-                for (int i = 0; i < targetFunc.Count + 1; i++)
-                {
-                    bool isBasisVarible = true;
-                    int countOne = 0;
-                    int indexOfOne = -1;
-                    for (int j = 0; j < simplexTable.Count && isBasisVarible; j++)
+                    List<int> indexesOfBasisVariable = new List<int>();
+                    for (int i = 0; i < targetFunc.Count; i++)
                     {
-                        if (simplexTable[j][i] != 0 && simplexTable[j][i] != 1)
+                        indexesOfBasisVariable.Add(int.MaxValue);
+                    }
+
+                    for (int i = 0; i < targetFunc.Count; i++)
+                    {
+                        bool isBasisVarible = true;
+                        int countOne = 0;
+                        int indexOfOne = -1;
+                        for (int j = 0; j < simplexTable.Count && isBasisVarible; j++)
                         {
-                            isBasisVarible = false;
-                            continue;
+                            if (simplexTable[j][i] != 0 && simplexTable[j][i] != 1)
+                            {
+                                isBasisVarible = false;
+                                continue;
+                            }
+
+                            if (simplexTable[j][i] == 1)
+                            {
+                                countOne++;
+                                indexOfOne = j;
+                            }
                         }
 
-                        if (simplexTable[j][i] == 1)
+                        if (isBasisVarible && countOne == 1)
                         {
-                            countOne++;
-                            indexOfOne = j;
+                            resultBasis[i] = simplexTable[indexOfOne][simplexTable[indexOfOne].Count - 1];
+                            indexesOfBasisVariable[i] = indexOfOne;
                         }
                     }
 
-                    if (isBasisVarible && countOne == 1)
+                    PrintSimplexTable(simplexTable, indexesOfBasisVariable);
+
+                    indexesOfBasisVariable = new List<int>();
+                    for (int i = 0; i < targetFunc.Count; i++)
                     {
-                        resultBasis[i] = simplexTable[indexOfOne][simplexTable[indexOfOne].Count - 1];
+                        indexesOfBasisVariable.Add(int.MaxValue);
                     }
                 }
 
@@ -397,32 +415,34 @@ namespace SimplexMethod
             for (int i = 0; i < countArtificialVariable; i++)
             {
                 simplexTable.Add(new List<double>());
-                
+
                 // j - столбец, выводим коэффициенты ограничений
                 for (int j = 0; j < limitations[i].Count; j++)
                 {
                     simplexTable[i].Add(limitations[i][j]);
                 }
-                
+
                 do
                 {
                     k++;
                 } while (k < startBasis.Count && startBasis[k] == 0);
+
                 // Добавляем значение функции
                 simplexTable[i].Add(startBasis[k]);
             }
-            
+
             simplexTable.Add(new List<double>());
             // Строка с F
             for (int i = 0; i < targetFunc.Count; i++)
             {
                 simplexTable[simplexTable.Count - 1].Add(targetFunc[i]);
             }
+
             simplexTable[simplexTable.Count - 1].Add(CalculateTargetFunc(startBasis));
-            
+
             return simplexTable;
         }
-        
+
         private void PrintStartSimplexTable(List<List<double>> simplexTable)
         {
             // Строка с обозначением столбцов
@@ -430,6 +450,7 @@ namespace SimplexMethod
             {
                 Console.Write("\tx" + (i + 1));
             }
+
             Console.Write("\tF(x)\n");
 
             int k = 0;
@@ -456,20 +477,23 @@ namespace SimplexMethod
                 {
                     Console.Write("\t" + Math.Round(simplexTable[i][j], 2));
                 }
+
                 Console.WriteLine();
             }
         }
 
-        private void PrintSimplexTable(List<List<double>> simplexTable)
+        private void PrintSimplexTable(List<List<double>> simplexTable, List<int> indexesOfOne)
         {
             // Строка с обозначением столбцов
             for (int i = 0; i < limitations[0].Count; i++)
             {
                 Console.Write("\tx" + (i + 1));
             }
+
             Console.Write("\tF(x)\n");
 
             int k = 0;
+            int min = 0;
             for (int i = 0; i < simplexTable.Count; i++)
             {
                 // Выводим F
@@ -480,12 +504,9 @@ namespace SimplexMethod
                 // Выводим базисную переменную
                 else
                 {
-                    do
-                    {
-                        k++;
-                    } while (k < resultBasis.Count && resultBasis[k] == 0);
-
-                    Console.Write("x" + (k + 1));
+                    int x = indexesOfOne.Min();
+                    Console.Write("x" + (indexesOfOne.IndexOf(x) + 1));
+                    indexesOfOne[indexesOfOne.IndexOf(x)] = int.MaxValue;
                 }
 
                 // j - столбец, выводим коэффициенты
@@ -493,6 +514,7 @@ namespace SimplexMethod
                 {
                     Console.Write("\t" + Math.Round(simplexTable[i][j], 2));
                 }
+
                 Console.WriteLine();
             }
         }
@@ -502,7 +524,7 @@ namespace SimplexMethod
             double result = 0.0;
             for (int i = 0; i < targetFunc.Count; i++)
             {
-                if(targetFunc[i] == 0) continue;
+                if (targetFunc[i] == 0) continue;
                 result += (isInvertTarget ? -targetFunc[i] : targetFunc[i]) * x[i];
             }
 

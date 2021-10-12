@@ -7,12 +7,12 @@ namespace SimplexMethod
     {
         private static Lpp task;
         
-        static void Main(string[] args)
+        static void Main()
         {
             task = new Lpp();
             
             //Console.Write("Введите путь к файлу: ");
-            string path = "task2.txt";
+            string path = "task3.txt";
             //path = Console.ReadLine();
             
             StreamReader fstream = null;
@@ -42,7 +42,7 @@ namespace SimplexMethod
             Console.WriteLine("Входные данные: ");
             task.PrintLpp();
             Console.WriteLine();
-
+            
             try
             {
                 task.Solve();
