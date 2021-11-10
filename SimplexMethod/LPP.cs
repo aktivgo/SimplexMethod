@@ -444,7 +444,7 @@ namespace SimplexMethod
             PrintStartSimplexTableWithSupFunc(simplexTable);
 
             // Пока в доп функции есть отрицательные переменные
-            while (SupFuncIsNull(simplexTable[simplexTable.Count -1]))
+            while (SupFuncIsNull(simplexTable[simplexTable.Count - 1]))
             {
                 // Выбираем ведущий столбец
                 int selectColumn = SelectColumn(simplexTable[simplexTable.Count - 1]);
@@ -538,9 +538,9 @@ namespace SimplexMethod
                 Console.WriteLine("\nОграничения противоречивы!\n");
                 return;
             }
-            
+
             simplexTable.RemoveAt(simplexTable.Count - 1);
-            
+
             // Пока в целевой функции есть отрицательные элементы решение не оптимально
             while (SelectColumn(simplexTable[simplexTable.Count - 1]) != -1)
             {
@@ -605,6 +605,7 @@ namespace SimplexMethod
                     {
                         resultBasis[i] = 0;
                     }
+
                     bool isBasisVarible = true;
                     int countOne = 0;
                     int indexOfOne = -1;
@@ -645,11 +646,13 @@ namespace SimplexMethod
                 Console.Write(" " + Math.Round(resultBasis[i], 2) + (i != resultBasis.Count - 1 ? ";" : ""));
             }
 
-            double result = Math.Round(simplexTable[simplexTable.Count - 1][simplexTable[simplexTable.Count - 1].Count - 1], 2);
+            double result =
+                Math.Round(simplexTable[simplexTable.Count - 1][simplexTable[simplexTable.Count - 1].Count - 1], 2);
+            //double result = Math.Round(CalculateTargetFunc(resultBasis), 2);
             Console.Write(" )\n" + (isInvertTarget ? "Fmax = " + result + "\nFmin = " + -result : "F = " + result));
             Console.WriteLine();
         }
-        
+
         private bool SupFuncIsPositive(List<double> supFunc)
         {
             for (int i = 0; i < supFunc.Count - 1; i++)
@@ -662,7 +665,7 @@ namespace SimplexMethod
 
             return false;
         }
-        
+
         private bool SupFuncIsNull(List<double> supFunc)
         {
             for (int i = 0; i < supFunc.Count - 1; i++)
@@ -679,7 +682,7 @@ namespace SimplexMethod
         private List<List<double>> CreateSimplexTableWithSupFunc(List<double> supFunc)
         {
             List<List<double>> simplexTable = new List<List<double>>();
-            
+
             // i - строка
             for (int i = 0; i < limitations.Count - countVariable; i++)
             {
@@ -715,9 +718,9 @@ namespace SimplexMethod
             {
                 sum += limits[i];
             }
-            
+
             simplexTable[simplexTable.Count - 1].Add(-sum);
-            
+
             return simplexTable;
         }
 
@@ -941,6 +944,7 @@ namespace SimplexMethod
             {
                 buf.Add(targetFunc[i]);
             }
+
             double minElement = buf.Min();
             if (minElement >= 0) return -1;
             return buf.IndexOf(minElement);
