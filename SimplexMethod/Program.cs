@@ -12,7 +12,7 @@ namespace SimplexMethod
             task = new Lpp();
 
             //Console.Write("Введите путь к файлу: ");
-            string path = "test1.txt";
+            string path = "Lab5/task3_3.txt";
             //path = Console.ReadLine();
 
             StreamReader fstream = null;

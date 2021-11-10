@@ -304,7 +304,7 @@ namespace SimplexMethod
             else
             {
                 Console.WriteLine(
-                    "ЗЛП не находится в каноническом виде, поэтому она решается двухэтапным симплекс-методом");
+                    "ЗЛП не находится в каноническом виде, поэтому она решается двухэтапным симплекс-методом\n");
 
                 TwoStepSimplexMethod();
             }
@@ -437,14 +437,14 @@ namespace SimplexMethod
                 Console.Write(supFunc[i] + " ");
             }
 
-            Console.WriteLine();
+            Console.WriteLine("\n");
 
             double coef;
             List<List<double>> simplexTable = CreateSimplexTableWithSupFunc(supFunc);
             PrintStartSimplexTableWithSupFunc(simplexTable);
 
-            // Пока в доп функции есть ненулевые элементы
-            while (!SupFuncIsNull(simplexTable[simplexTable.Count -1]))
+            // Пока в доп функции есть отрицательные переменные
+            while (SupFuncIsNull(simplexTable[simplexTable.Count -1]))
             {
                 // Выбираем ведущий столбец
                 int selectColumn = SelectColumn(simplexTable[simplexTable.Count - 1]);
@@ -476,7 +476,7 @@ namespace SimplexMethod
                     return;
                 }
 
-                Console.Write(", строка " + selectLine + "\n");
+                Console.Write(", строка " + selectLine + "\n\n");
 
                 // Делим ведущую строку на коэффициент, расположенный на пересечении выбранных столбца и строки
                 coef = simplexTable[selectLine][selectColumn];
@@ -531,6 +531,12 @@ namespace SimplexMethod
                 }
 
                 PrintSimplexTableWithSupFunc(simplexTable, indexesOfBasisVariable);
+            }
+
+            if (SupFuncIsPositive(simplexTable[simplexTable.Count - 1]))
+            {
+                Console.WriteLine("\nОграничения противоречивы!\n");
+                return;
             }
             
             simplexTable.RemoveAt(simplexTable.Count - 1);
@@ -643,25 +649,37 @@ namespace SimplexMethod
             Console.Write(" )\n" + (isInvertTarget ? "Fmax = " + result + "\nFmin = " + -result : "F = " + result));
             Console.WriteLine();
         }
-
-        private bool SupFuncIsNull(List<double> supFunc)
+        
+        private bool SupFuncIsPositive(List<double> supFunc)
         {
-            foreach (var item in supFunc)
+            for (int i = 0; i < supFunc.Count - 1; i++)
             {
-                if (Math.Round(item, 5) != 0.0)
+                if (Math.Round(supFunc[i], 1) > 0.0)
                 {
-                    return false;
+                    return true;
                 }
             }
 
-            return true;
+            return false;
+        }
+        
+        private bool SupFuncIsNull(List<double> supFunc)
+        {
+            for (int i = 0; i < supFunc.Count - 1; i++)
+            {
+                if (Math.Round(supFunc[i], 1) < 0.0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<List<double>> CreateSimplexTableWithSupFunc(List<double> supFunc)
         {
             List<List<double>> simplexTable = new List<List<double>>();
-
-            int k = 0;
+            
             // i - строка
             for (int i = 0; i < limitations.Count - countVariable; i++)
             {
